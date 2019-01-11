@@ -23,9 +23,7 @@ class MainForm extends Component {
 
     componentDidMount() {
         let { from, to } = this.props;
-        const fromError = !this.props.from;
-        const toError = !this.props.to;
-        this.setState({ from, to, fromError, toError });
+        this.setState({ from, to });
     }
 
     navigateTo(route, from, to) {
