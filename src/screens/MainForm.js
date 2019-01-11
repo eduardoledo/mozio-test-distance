@@ -23,7 +23,9 @@ class MainForm extends Component {
 
     componentDidMount() {
         let { from, to } = this.props;
-        this.setState({ from, to });
+        const fromError = !this.props.from;
+        const toError = !this.props.to;
+        this.setState({ from, to, fromError, toError });
     }
 
     navigateTo(route, from, to) {
@@ -47,9 +49,9 @@ class MainForm extends Component {
             event.preventDefault();
             const fromError = !this.props.from;
             const toError = !this.props.to;
-            this.setState(this.setState({ fromError, toError }))
+            this.setState({ fromError, toError })
         }
-}
+    }
 
     render() {
         let { from, to } = this.props;
