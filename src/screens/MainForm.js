@@ -11,9 +11,11 @@ class MainForm extends Component {
         to: '',
     }
 
+    inputFrom = null;
+    inputTo = null;
+
     componentWillMount() {
         let { from, to } = this.props.match.params;
-        console.log(this.props);
         this.props.fetchItems();
         this.props.fetchFrom(from);
         this.props.fetchTo(to);
@@ -25,43 +27,63 @@ class MainForm extends Component {
     }
 
     navigateTo(route, from, to) {
-        this.setState({ from, to });
-        this.props.history.push(`${route}${from.id},${to.id}`);
+        this.props.fetchFrom(from);
+        this.props.fetchTo(to);
+        this.props.history.push(`${route}${from},${to}`);
     }
 
+    renderItem(item, isHighlighted) {
+        return <div key={item.id} style={{ background: isHighlighted ? 'lightgray' : 'white' }}>
+            {item.label}
+        </div>
+    }
+
+    validateFields() {
+        return this.props.from && this.props.to;
+    }
+
+    formOnSubmit(event) {
+        if (!this.validateFields()) {
+            event.preventDefault();
+            const fromError = !this.props.from;
+            const toError = !this.props.to;
+            this.setState(this.setState({ fromError, toError }))
+        }
+}
+
     render() {
-        const { from, to } = this.props;
+        let { from, to } = this.props;
         const fromId = from ? from.id : '-'
         const toId = to ? to.id : '-';
+        let fromError = this.state.fromError;
+        let toError = this.state.toError;
         return (<div className="App">
-            <form action={`/results/${fromId},${toId}`}>
-                <label htmlFor={'from'}>From</label>
-                <Autocomplete
-                    getItemValue={(item) => item.id}
-                    items={this.props.items}
-                    renderItem={(item, isHighlighted) =>
-                        <div style={{ background: isHighlighted ? 'lightgray' : 'white' }}>
-                            {item.label}
-                        </div>
-                    }
-                    value={from ? from.label : ''}
-                    onChange={(e) => this.navigateTo("/", e.target.value, to)}
-                    onSelect={(val) => this.navigateTo("/", val, to)}
-                />
+            <form action={`/results/${fromId},${toId}`} onSubmit={(e) => this.formOnSubmit(e)}>
+                <div style={{ background: fromError ? 'red' : 'white' }}>
+                    <label htmlFor={'from'}>From</label>
+                    <Autocomplete
+                        ref={(ref) => { this.inputFrom = ref; }}
+                        getItemValue={(item) => item.id}
+                        items={this.props.items}
+                        renderItem={this.renderItem}
+                        value={from ? from.label : ''}
+                        onChange={(e) => this.navigateTo("/", e.target.value, toId)}
+                        onSelect={(val) => this.navigateTo("/", val, toId)}
+                    />
+                </div>
                 <br />
-                <label htmlFor={'to'}>To</label>
-                <Autocomplete
-                    getItemValue={(item) => item.id}
-                    items={this.props.items}
-                    renderItem={(item, isHighlighted) =>
-                        <div style={{ background: isHighlighted ? 'lightgray' : 'white' }}>
-                            {item.label}
-                        </div>
-                    }
-                    value={to ? to.label : ''}
-                    onChange={(e) => this.navigateTo("/", from, e.target.value)}
-                    onSelect={(val) => this.navigateTo("/", from, val)}
-                />
+                <div style={{ background: toError ? 'red' : 'white' }}>
+                    <label htmlFor={'to'}>To</label>
+                    <Autocomplete
+                        ref={(ref) => { this.inputTo = ref; }}
+                        getItemValue={(item) => item.id}
+                        items={this.props.items}
+                        renderItem={this.renderItem}
+                        value={to ? to.label : ''}
+                        onChange={(e) => this.navigateTo("/", fromId, e.target.value)}
+                        onSelect={(val) => this.navigateTo("/", fromId, val)}
+                    />
+                </div>
                 <br />
                 <button type={'submit'}>Submit</button>
             </form>
